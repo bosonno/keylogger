@@ -62,6 +62,11 @@ $ keylogger ~/logfile.txt
 Logging to: /Users/Casey/logfile.txt
 ```
 
+```bash
+# Tail the JSON logfile.
+$ tail -f /var/log/keystroke.log | jq
+```
+
 ## Issues
 
 ### Unable to Create Event Tap
