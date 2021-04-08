@@ -165,10 +165,10 @@ const char *convertKeyCode(int keyCode, bool shift, bool caps) {
         case 89:  return "7";
         case 91:  return "8";
         case 92:  return "9";
-        case 36:  return "[return]";
+        case 36:  return "[enter]";
         case 48:  return "[tab]";
         case 49:  return "[space]";
-        case 51:  return "[del]";
+        case 51:  return "[backspace]";
         case 53:  return "[esc]";
         case 54:  return "[left-cmd]";
         case 55:  return "[right-cmd]";
@@ -183,7 +183,7 @@ const char *convertKeyCode(int keyCode, bool shift, bool caps) {
         case 64:  return "[f17]";
         case 72:  return "[volup]";
         case 73:  return "[voldown]";
-        case 74:  return "[mute]";
+        case 74:  return "[volmute]";
         case 79:  return "[f18]";
         case 80:  return "[f19]";
         case 90:  return "[f20]";
@@ -202,12 +202,12 @@ const char *convertKeyCode(int keyCode, bool shift, bool caps) {
         case 113: return "[f15]";
         case 114: return "[help]";
         case 115: return "[home]";
-        case 116: return "[pgup]";
-        case 117: return "[fwddel]";
+        case 116: return "[pageup]";
+        case 117: return "[delete]";
         case 118: return "[f4]";
         case 119: return "[end]";
         case 120: return "[f2]";
-        case 121: return "[pgdown]";
+        case 121: return "[pagedown]";
         case 122: return "[f1]";
         case 123: return "[left]";
         case 124: return "[right]";
